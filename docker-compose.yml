@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  skam-test-back:
+    container_name: skam-test-back
+    build:
+      context: ./docker-back
+      dockerfile: ../.docker-files/Dockerfile.Backend.PHP
+      args:
+        - PHP_SOCKET=php-fpm:9000
+    working_dir: /var/www/html
+    volumes:
+      - ./docker-back:/var/www/html
+      # - skam-test-volume:/var/www/html/public/build     # can commit if not required Volume
+    ports:
+      - "9003:80"
+    restart: unless-stopped
+    tty: true
+    networks:
+      # can commit if not required Network
+      - skam-test-network
+
+  skam-test-front:
+    container_name: skam-test-front
+    tty: true
+    stdin_open: true
+    build:
+      context: ./docker-front
+      dockerfile: ../.docker-files/Dockerfile.Frontend.PNPM
+    volumes:
+      - ./docker-front:/var/www/html
+      - /var/www/html/.pnpm-store
+      - /var/www/html/node_modules
+      # - skam-test-volume:/var/www/html/public/build     # can commit if not required Volume
+    ports:
+      - "5173:5173"
+    command: pnpm run dev
+    networks:
+      # can commit if not required Network
+      - skam-test-network
+
+networks:
+  # can commit if not required Network
+  skam-test-network:
+    driver: bridge
+    # volumes:     # can commit if not required Volume
+    # skam-test-volume: # external: true
